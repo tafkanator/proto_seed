@@ -1,0 +1,32 @@
+$main-color: red;
+
+body {
+	background: $main-color;
+	font: 14px/1.5 "Arial";
+}
+.boxes {
+	font-size: 0;
+	
+	.box {
+		font-size: 14px;
+		text-transform: uppercase;
+		font-weight: bold;
+		width: 100px;
+		height: 100px;
+		background: darken($color: $main-color, $amount: 25%);
+		color: $main-color;
+		line-height: 100px;
+		text-align: center;
+		display: inline-block;
+		box-shadow: 1px 1px 5px #111;
+		border-radius: 3px;
+		margin: 5px;
+		
+		transition: background 150ms, transform 150ms; 
+		
+		&:hover {
+			background: darken($color: $main-color, $amount: 40%);
+			transform: translateY(1px);
+		}
+	}
+}

@@ -1,0 +1,17 @@
+{
+  "name": "html_seed",
+  "description": "Seed for creating html",
+  "version": "0.1.0",
+  "author": {
+    "name": "Taavi Sange",
+    "email": "taavi@stagnationlab.com",
+    "url": "http://stagnationlab.com/"
+  },
+  "devDependencies": {
+    "browser-sync": "^2.7.6",
+    "gulp": "^3.9.0",
+    "gulp-autoprefixer": "^2.3.1",
+    "gulp-sass": "^2.0.1",
+    "gulp-sourcemaps": "^1.5.2"
+  }
+}
