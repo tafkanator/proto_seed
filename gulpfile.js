@@ -9,7 +9,7 @@ var autoprefixer = require('gulp-autoprefixer');
 var rootPath = './app/';
 var gfxPath = rootPath + 'gfx/';
 
-// Static Server + watching scss/html files
+// Static Server + file watcher
 gulp.task('serve', ['sass'], function() {
 	browserSync.init({
 		server: "./"
@@ -17,6 +17,7 @@ gulp.task('serve', ['sass'], function() {
 
 	gulp.watch(gfxPath + 'scss/*.scss', ['sass']);
 	gulp.watch('./app/**/*.html').on('change', browserSync.reload);
+	gulp.watch('./proto_engine/**.js').on('change', browserSync.reload);
 });
 
 // Compile sass into CSS & auto-inject into browsers
