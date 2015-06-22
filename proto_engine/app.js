@@ -37,8 +37,21 @@
 
 		that.parse = function(template, $values) {
 			var promise = new Promise();
+			var loader = new Loader();
 			var parsedTemplate = template;
 			var placeholders = [];
+			var placeholderPaths = 0;
+
+			function checkDone() {
+				if (placeholderPaths === 0) {
+					console.log('resolve')
+					promise.resolve(parsedTemplate);
+				}
+			}
+
+			function replacePlaceholder(placeholder, value) {
+				parsedTemplate = parsedTemplate.replace('{{' + placeholder + '}}', value);
+			}
 
 			// find all {{placeholder}} tags
 			template.replace(/\{{(.+?)\}}/g, function($0, $1) {
@@ -50,16 +63,31 @@
 			// everything else will be treated as file paths, load contents into them
 			placeholders.forEach(function(placeholder) {
 				if (placeholder[0] === '$') {
-					parsedTemplate = parsedTemplate.replace(
-						'{{' + placeholder + '}}',
-						$values[placeholder.substr(1)]
-					);
+					replacePlaceholder(placeholder, $values[placeholder.substr(1)]);
 				} else {
-					console.log(placeholder, 'not implemented');
+					placeholderPaths++;
+
+					console.log('+', placeholderPaths)
+
+
+					loader.get('/app/' + placeholder).then(function(placeholderHtml) {
+						that.parse(placeholderHtml).then(function(parsedHtml) {
+							replacePlaceholder(placeholder, parsedHtml);
+							placeholderPaths--;
+							console.log('-', parsedHtml)
+							//
+							checkDone();
+						});
+					});
+
+
+
+					//console.log(placeholder, 'not implemented');
 				}
 			}.bind(this));
 
-			promise.resolve(parsedTemplate);
+			checkDone();
+
 
 			return promise;
 		};
@@ -69,7 +97,6 @@
 
 	function Loader() {
 		var that = {};
-		var baseUrl = location.protocol + '//' + location.host;
 		
 		that.get = function(filename) {
 			var promise = new Promise();
@@ -93,7 +120,31 @@
 			
 			return promise;
 		};
-		
+
+		that.getAll = function(filenames) {
+			var promise = new Promise();
+			var donePromises = 0;
+			var files = {};
+
+			function checkDone() {
+				donePromises++;
+
+				if (donePromises >= filenames.length) {
+					 promise.resolve(files);
+				}
+
+			}
+
+			filenames.forEach(function(filename) {
+				that.get(filename).then(function(file) {
+					files[filename] = file;
+
+					checkDone();
+				});
+			});
+
+			return promise;
+		};
 		
 		return that;
 	}
@@ -125,22 +176,21 @@
 		
 		var templateWrapDom = document.querySelector('body').innerHTML;
 		
-		var templateName = navi.getTemplateName() || 'default';
-		var pageName = navi.getPageName() || 'home';
-		
-		// load page
+		var templateName = '/app/templates/' +  navi.getTemplateName() || 'default';
+		var pageName ='/app/pages/' + navi.getPageName() || 'home';
 
-		loader.get('/app/templates/' + templateName).then(function templateLoaded(template) {
-			loader.get('/app/pages/' + pageName).then(function pageLoaded(pageTemplate) {
-				// load data into page
-				parser.parse(template, {
-					page: pageTemplate
-				}).then(function parsePage(pageHtml) {
-					parser.parse(templateWrapDom, {
-						template: pageHtml
-					}).then(function addCodeToHtml(html) {
-						 document.querySelector('body').innerHTML = html; 
-					});
+		// load page
+		loader.getAll([templateName, pageName]).then(function(files) {
+			var template = files[templateName];
+			var page = files[pageName];
+
+			parser.parse(template, {
+				page: page
+			}).then(function(pageHtml) {
+				parser.parse(templateWrapDom, {
+					template: pageHtml
+				}).then(function (html) {
+					document.querySelector('body').innerHTML = html;
 				});
 			});
 		});
