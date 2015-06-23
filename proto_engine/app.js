@@ -1,8 +1,6 @@
 (function() {
 	'use strict';
 	
-	var rootPath = './';
-	
 	function Promise () {
 		this._thens = [];
 	}
@@ -35,59 +33,77 @@
 	function Parser() {
 		var that = {};
 
-		that.parse = function(template, $values) {
+		that.parse = function(template, placeholderValues) {
+			placeholderValues = placeholderValues || [];
+			
 			var promise = new Promise();
-			var loader = new Loader();
 			var parsedTemplate = template;
 			var placeholders = [];
-			var placeholderPaths = 0;
-
-			function checkDone() {
-				if (placeholderPaths === 0) {
-					console.log('resolve')
-					promise.resolve(parsedTemplate);
-				}
-			}
-
-			function replacePlaceholder(placeholder, value) {
-				parsedTemplate = parsedTemplate.replace('{{' + placeholder + '}}', value);
-			}
-
-			// find all {{placeholder}} tags
-			template.replace(/\{{(.+?)\}}/g, function($0, $1) {
-				placeholders.push($1);
-			});
-
-			// bind placeholders with values
-			// placeholders starting with $ are paired with $values
-			// everything else will be treated as file paths, load contents into them
-			placeholders.forEach(function(placeholder) {
-				if (placeholder[0] === '$') {
-					replacePlaceholder(placeholder, $values[placeholder.substr(1)]);
-				} else {
-					placeholderPaths++;
-
-					console.log('+', placeholderPaths)
-
-
-					loader.get('/app/' + placeholder).then(function(placeholderHtml) {
-						that.parse(placeholderHtml).then(function(parsedHtml) {
-							replacePlaceholder(placeholder, parsedHtml);
-							placeholderPaths--;
-							console.log('-', parsedHtml)
-							//
-							checkDone();
+			var templates = [];
+			
+			function getTemplates() {
+				var loader = Loader();
+				var templatesPromise = new Promise();
+				var templatesToLoad = templates.length;
+				
+				// do recursve loop and replace all tags inside templates
+				templates.forEach(function (template) {
+					loader.get(template).then(function(html) {
+						that.parse(html).then(function(parsedHtml) {
+							placeholderValues[template] = parsedHtml;
+							
+							templatesToLoad--;
+							
+							if (templatesToLoad === 0) {
+								templatesPromise.resolve();
+							} 
 						});
 					});
+				});
+				
+				return templatesPromise;
+			}
+			
+			function replacePlaceholders() {
+				parsedTemplate = template.replace(/\{{(.+?)\}}/g, function(match, p1) {
+					if (p1[0] === '$') {
+						p1 = p1.substr(1);
+					}
+					
+					return placeholderValues[p1];
+				});	
+			}
 
-
-
-					//console.log(placeholder, 'not implemented');
+			
+			var matches = template.match(/\{{(.+?)\}}/g);
+			
+			if (matches !== null) {
+				// find all {{placeholder}} tags
+				matches.forEach(function(match) {
+					var value = match.substr(2);
+					value = value.substr(0, value.length - 2);
+					
+					if (value[0] === '$') {
+						placeholders.push(value);
+					} else {
+						templates.push(value);
+					}
+				});
+				
+				// replace placeholders with values
+				if (templates.length > 0) {
+					getTemplates().then(function() {
+						replacePlaceholders();
+						promise.resolve(parsedTemplate);
+					});
+				} else {
+					replacePlaceholders();
+					promise.resolve(parsedTemplate);
 				}
-			}.bind(this));
-
-			checkDone();
-
+			} else {
+				promise.resolve(template);
+			}
+			
 
 			return promise;
 		};
