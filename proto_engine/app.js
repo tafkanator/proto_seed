@@ -2,33 +2,36 @@
 	'use strict';
 	
 	function Promise () {
-		this._thens = [];
-	}
-	 
-	Promise.prototype = {
-		then: function (onResolve, onReject) {
-			// capture calls to then()
-			this._thens.push({ resolve: onResolve, reject: onReject });
-		},
-	 
-		resolve: function (val) { this._complete('resolve', val); },
-	 
-		reject: function (ex) { this._complete('reject', ex); },
-	 
-		_complete: function (which, arg) {
+		var that = {};
+
+		var thens = [];
+
+		function complete (which, arg) {
 			// switch over to sync then()
-			this.then = which === 'resolve' ?
+			that.then = which === 'resolve' ?
 				function (resolve, reject) { resolve && resolve(arg); } :
 				function (resolve, reject) { reject && reject(arg); };
 			// disallow multiple calls to resolve or reject
-			this.resolve = this.reject = 
+			that.resolve = that.reject =
 				function () { throw new Error('Promise already completed.'); };
 			// complete all waiting (async) then()s
 			var aThen, i = 0;
-			while (aThen = this._thens[i++]) { aThen[which] && aThen[which](arg); }
-			delete this._thens;
+			while (aThen = thens[i++]) { aThen[which] && aThen[which](arg); }
+			thens.length = 0;
 		}
-	};
+
+
+		that.then = function (onResolve, onReject) {
+			// capture calls to then()
+			thens.push({ resolve: onResolve, reject: onReject });
+		};
+
+		that.resolve = function (val) { complete('resolve', val); };
+
+		that.reject = function (ex) { complete('reject', ex); };
+
+		return that;
+	}
 	
 	function Parser() {
 		var that = {};
@@ -36,14 +39,14 @@
 		that.parse = function(template, placeholderValues) {
 			placeholderValues = placeholderValues || [];
 			
-			var promise = new Promise();
+			var promise = Promise();
 			var parsedTemplate = template;
 			var placeholders = [];
 			var templates = [];
 			
 			function getTemplates() {
 				var loader = Loader();
-				var templatesPromise = new Promise();
+				var templatesPromise = Promise();
 				var templatesToLoad = templates.length;
 				
 				// do recursve loop and replace all tags inside templates
@@ -115,7 +118,7 @@
 		var that = {};
 		
 		that.get = function(filename) {
-			var promise = new Promise();
+			var promise = Promise();
 			var xhr = new XMLHttpRequest();
 			
 			xhr.open('GET', filename + '.html', true);
@@ -138,7 +141,7 @@
 		};
 
 		that.getAll = function(filenames) {
-			var promise = new Promise();
+			var promise = Promise();
 			var donePromises = 0;
 			var files = {};
 
