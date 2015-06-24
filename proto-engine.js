@@ -170,18 +170,62 @@
 	
 	function Navi() {
 		var that = {};
-		
+		var currentTemplate = '';
+		var currentPage = '';
+
+		var eventListeners = [];
+
+		function getUrlParams() {
+			var hash = location.hash;
+			var pieces = hash.split('/');
+
+			return {
+				template: pieces[1],
+				page: pieces[2]
+			};
+		}
+
+		function onHashChange() {
+			var urlParams = getUrlParams();
+
+			currentTemplate = urlParams.template;
+			currentPage = urlParams.page;
+
+			eventListeners.forEach(function(listener) {
+				listener(that.getTemplateName(), that.getPageName());
+			});
+		}
+
+		that.init = function() {
+			window.addEventListener("hashchange", onHashChange, false);
+
+			var urlParams = getUrlParams();
+
+			if (!urlParams.template || !urlParams.page) {
+				that.open('default', 'home');
+			} else {
+				onHashChange();
+			}
+		};
+
+		that.onUrlChange = function(callBack) {
+			eventListeners.push(callBack);
+		};
+
 		that.open = function(templateName, pageName) {
-			var template = that.getTemplateName();		
-			var page = that.getPageName();		
+			if (templateName === currentTemplate && pageName === currentPage) {
+				return;
+			}
+
+			window.location.href = '/#/' + templateName + '/' + pageName;
 		};
 		
 		that.getTemplateName = function() {
-			return 'default';
+			return '/app/templates/' + currentTemplate;
 		};
 		
 		that.getPageName = function() {
-			return 'home';
+			return '/app/pages/' + currentPage;
 		};
 		
 		
@@ -192,27 +236,32 @@
 		var parser = Parser();
 		var loader = Loader();
 		var navi = Navi();
-		
-		var templateWrapDom = document.querySelector('body').innerHTML;
-		
-		var templateName = '/app/templates/' +  navi.getTemplateName() || 'default';
-		var pageName ='/app/pages/' + navi.getPageName() || 'home';
 
-		// load page
-		loader.getAll([templateName, pageName]).then(function(files) {
-			var template = files[templateName];
-			var page = files[pageName];
+		var documentBody = document.querySelector('body');
+		var templateWrapDom = documentBody.innerHTML;
 
-			parser.parse(template, {
-				page: page
-			}).then(function(pageHtml) {
-				parser.parse(templateWrapDom, {
-					template: pageHtml
-				}).then(function (html) {
-					document.querySelector('body').innerHTML = html;
+		function changePage(templateUrl, pageUrl) {
+			loader.getAll([templateUrl, pageUrl]).then(function(files) {
+				var template = files[navi.getTemplateName()];
+				var page = files[navi.getPageName()];
+
+				parser.parse(template, {
+					page: page
+				}).then(function(pageHtml) {
+					parser.parse(templateWrapDom, {
+						template: pageHtml
+					}).then(function (html) {
+						documentBody.innerHTML = html;
+					});
 				});
 			});
+		}
+
+		navi.onUrlChange(function(template, page) {
+			changePage(template, page);
 		});
+
+		navi.init();
 	});
 	
 } ());
