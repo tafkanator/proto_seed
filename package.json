@@ -3,15 +3,19 @@
   "description": "Seed for creating html",
   "version": "0.1.0",
   "author": {
-    "name": "Taavi Sange",
+    "name": "Taavi Sangel",
     "email": "taavi@stagnationlab.com",
     "url": "http://stagnationlab.com/"
   },
   "devDependencies": {
-    "browser-sync": "^2.7.6",
+    "browser-sync": "^2.7.13",
+    "css-mqpacker": "^3.1.0",
+    "cssnext": "^1.8.1",
+    "csswring": "^3.0.5",
     "gulp": "^3.9.0",
-    "gulp-autoprefixer": "^2.3.1",
-    "gulp-sass": "^2.0.1",
-    "gulp-sourcemaps": "^1.5.2"
+    "gulp-postcss": "^5.1.9",
+    "gulp-sourcemaps": "^1.5.2",
+    "postcss-nested": "^0.3.2",
+    "postcss-nesting": "^0.1.0"
   }
 }
