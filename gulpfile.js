@@ -7,9 +7,8 @@ var sourcemaps = require('gulp-sourcemaps');
 // post css
 var postcss = require('gulp-postcss');
 var mqpacker = require('css-mqpacker');
-var csswring = require('csswring');
 var cssnext = require('cssnext');
-var nested = require('postcss-nested');
+var precss = require('precss');
 var grid = require('postcss-grid');
 
 // Static Server + file watcher
@@ -19,6 +18,7 @@ gulp.task('serve', ['css'], function() {
 	});
 
 	gulp.watch('./app/gfx/css/**/*.css', ['css']);
+	gulp.watch('./app/gfx/css/**/*.scss', ['css']);
 	gulp.watch('./app/**/*.html').on('change', browserSync.reload);
 	//gulp.watch('./proto_engine/**.js').on('change', browserSync.reload);
 });
@@ -26,16 +26,15 @@ gulp.task('serve', ['css'], function() {
 gulp.task('css', function () {
 	var processors = [
 		mqpacker,
-		csswring,
 		grid({
 			columns: 12,
 			maxWidth: 960,
 			gutter: 10
 		}),
-		cssnext(),
-		nested
+		precss(),
+		cssnext()
 	];
-	return gulp.src('./app/gfx/css/*.css')
+	return gulp.src('./app/gfx/css/main.css')
 		.pipe(sourcemaps.init())
 		.pipe(postcss(processors))
 		.on('error', function (err) {

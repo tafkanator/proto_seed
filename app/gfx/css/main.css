@@ -1,22 +1,10 @@
 @import url("plugins/normalize.css");
 
-@import url("base/vars.css");
-@import url("base/typography.css");
-@import url("base/layout.css");
+@import url("base/vars.scss");
+@import url("base/typography.scss");
+@import url("base/layout.scss");
 
-@import url("components/boxes.css");
-
-.main-menu {
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
-.main-menu li {
-	display: inline-block;
-	margin: 0 10px;
-	font-weight: bold;
-	font-size: 16px;
-}
-.main-menu li.active a {
-	color: green;
-}
+@import url("components/header.scss");
+@import url("components/site-logo.scss");
+@import url("components/social-nav.scss");
+@import url("components/site-nav.scss");
