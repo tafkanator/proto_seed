@@ -11,6 +11,12 @@ var cssnext = require('cssnext');
 var precss = require('precss');
 var grid = require('postcss-grid');
 
+// svg sprites
+var svgSprite = require("gulp-svg-sprites");
+var filter    = require('gulp-filter');
+var svg2png   = require('gulp-svg2png');
+
+
 // Static Server + file watcher
 gulp.task('serve', ['css'], function() {
 	browserSync.init({
@@ -44,6 +50,15 @@ gulp.task('css', function () {
 		.pipe(sourcemaps.write('.'))
 		.pipe(gulp.dest('./app/gen'))
 		.pipe(browserSync.stream({match: '**/*.css'}));
+});
+
+gulp.task('sprites', function () {
+	return gulp.src('./app/gfx/svg/*.svg')
+		.pipe(svgSprite())
+		.pipe(gulp.dest("assets")) // Write the sprite-sheet + CSS + Preview
+		.pipe(filter("**/*.svg"))  // Filter out everything except the SVG file
+		.pipe(svg2png())           // Create a PNG
+		.pipe(gulp.dest("assets"));
 });
 
 gulp.task('default', ['serve']);
