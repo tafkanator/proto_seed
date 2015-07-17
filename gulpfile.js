@@ -10,6 +10,7 @@ var mqpacker = require('css-mqpacker');
 var csswring = require('csswring');
 var cssnext = require('cssnext');
 var nested = require('postcss-nested');
+var grid = require('postcss-grid');
 
 // Static Server + file watcher
 gulp.task('serve', ['css'], function() {
@@ -26,6 +27,11 @@ gulp.task('css', function () {
 	var processors = [
 		mqpacker,
 		csswring,
+		grid({
+			columns: 12,
+			maxWidth: 960,
+			gutter: 10
+		}),
 		cssnext(),
 		nested
 	];
