@@ -1,5 +1,5 @@
 {
-  "name": "html_seed",
+  "name": "seed",
   "description": "Seed for creating html",
   "version": "0.1.0",
   "author": {
@@ -7,14 +7,15 @@
     "email": "taavi@stagnationlab.com",
     "url": "http://stagnationlab.com/"
   },
+  "scripts": {
+    "watch": "webpack-dev-server --hot --inline --config --colors webpack.config.js"
+  },
   "devDependencies": {
-    "browser-sync": "^2.7.13",
-    "css-mqpacker": "^3.1.0",
-    "cssnext": "^1.8.1",
-    "gulp": "^3.9.0",
-    "gulp-postcss": "^5.1.9",
-    "gulp-sourcemaps": "^1.5.2",
-    "postcss-grid": "^1.0.1",
-    "precss": "^0.2.2"
+    "css-loader": "^0.21.0",
+    "node-sass": "^3.4.1",
+    "sass-loader": "^3.1.1",
+    "style-loader": "^0.13.0",
+    "webpack": "^1.12.2",
+    "webpack-dev-server": "^1.12.1"
   }
 }
