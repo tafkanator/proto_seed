@@ -6,10 +6,11 @@ var Api = require('./plugins/Api');
 // require plugins
 
 window.app = {
-	navi: new Navi(),
-	api: new Api()
+	navi: 			new Navi(),
+	api: 			new Api()
 };
 
 
 app.api.init();
+app.api.loadData();
 app.navi.init();

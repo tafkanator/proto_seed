@@ -7,3 +7,22 @@ body {
 		font-weight: normal;
 	}
 }
+
+.api-plugin,
+.navi-plugin,
+.new-plugin-plugin{
+	padding: 10px 15px;
+	margin: 10px 0;
+	color: #fff;
+}
+.api-plugin {
+	background: #343d46;
+}
+
+.navi-plugin {
+	background: #003366;
+}
+
+.new-plugin-plugin {
+	background: #004444;
+}
